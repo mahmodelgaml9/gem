@@ -1,0 +1,22 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Add custom base styles or component layers here */
+/* For example:
+@layer base {
+  body {
+    @apply bg-neutral-lightest text-neutral-darkest;
+  }
+  h1 {
+    @apply text-3xl font-bold;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white shadow-lg rounded-lg p-6;
+  }
+}
+*/

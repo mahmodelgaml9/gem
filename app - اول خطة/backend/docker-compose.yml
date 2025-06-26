@@ -1,0 +1,47 @@
+services:
+  # 1. The Node.js Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:3000"
+    depends_on:
+      db:
+        # === THIS IS THE MAGIC KEY ===
+        # Wait for the db service to be "healthy" before starting this app
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    # We will run the migration as part of the startup command
+    command: sh -c "npx prisma migrate deploy && npm run start"
+
+  # 2. The PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=supersecretpassword
+      - POSTGRES_DB=content_db
+    # === THIS IS THE NEW HEALTH CHECK ===
+    # Docker will continuously check if the database is ready to accept connections
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d content_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. The Redis Caching Service
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
